@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "VnetAddressPrefix": {
@@ -17,8 +17,13 @@
       "metadata": {
         "description": "The Service Principal Client Secret."
       }
-    }
-  },
+    },
+    "kubernetesVersion": {
+      "type": "string",
+      "defaultValue": ""
+      }
+    },
+  
   "variables": {
     "NewRGName": "[replace(resourceGroup().name,'RG-', '')]"
   },
@@ -162,7 +167,7 @@
     {
       "type": "Microsoft.OperationalInsights/workspaces",
       "name": "[replace(variables('NewRGName'),'Entrp', 'Entrp-LAWKS')]",
-      "apiVersion": "2017-03-15-preview",
+      "apiVersion": "2020-10-01",
       "location": "centralindia",
       "properties": {
         "sku": {
@@ -186,13 +191,13 @@
         "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('NewRGName'), '-Vnet'), 'subnet1')]"
       ],
       "properties": {
-        "kubernetesVersion": "1.17.16",
+        "kubernetesVersion": "[parameters('kubernetesVersion')]",
         "dnsPrefix": "[concat(variables('NewRGName'), '-AKSClusterdns')]",
         "agentPoolProfiles": [
           {
             "name": "node1",
             "count": 3,
-            "vmSize": "Standard_F8s",
+            "vmSize": "Standard_F8s_v2",
             "osDiskSizeGB": 100,
             "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('NewRGName'), '-Vnet'), 'subnet1')]",
             "maxPods": 30,
@@ -200,7 +205,7 @@
             "maxCount": 15,
             "minCount": 1,
             "enableAutoScaling": true,
-            "orchestratorVersion": "1.17.16",
+            "orchestratorVersion": "[parameters('kubernetesVersion')]",
             "osType": "Linux"
           }
         ],
@@ -258,7 +263,7 @@
       ],
       "properties": {
         "count": 3,
-        "vmSize": "Standard_F8s",
+        "vmSize": "Standard_F8s_v2",
         "osDiskSizeGB": 100,
         "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(variables('NewRGName'), '-Vnet'), 'subnet1')]",
         "maxPods": 30,
@@ -266,7 +271,7 @@
         "maxCount": 15,
         "minCount": 1,
         "enableAutoScaling": true,
-        "orchestratorVersion": "1.17.16",
+        "orchestratorVersion": "[parameters('kubernetesVersion')]",
         "osType": "Linux"
       }
     }
